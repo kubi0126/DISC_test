@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DISC人格测试</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', '微软雅黑', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+        }
+        .question {
+            background-color: white;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .question h3 {
+            margin-top: 0;
+            color: #34495e;
+        }
+        .options {
+            margin-top: 10px;
+        }
+        .option {
+            margin-bottom: 8px;
+            padding: 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .option:hover {
+            background-color: #e8f4fc;
+        }
+        .option input {
+            margin-right: 10px;
+        }
+        .option label {
+            cursor: pointer;
+        }
+        .submit-btn {
+            display: block;
+            width: 200px;
+            margin: 30px auto;
+            padding: 12px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .submit-btn:hover {
+            background-color: #2980b9;
+        }
+        .results {
+            display: none;
+            background-color: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-top: 30px;
+        }
+        .results h2 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        .result-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-left: 4px solid #3498db;
+            background-color: #f8f9fa;
+        }
+        .result-item h3 {
+            margin-top: 0;
+            color: #34495e;
+        }
+        .progress-bar {
+            height: 20px;
+            background-color: #ecf0f1;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s;
+        }
+        .d-progress { background-color: #e74c3c; }
+        .i-progress { background-color: #f39c12; }
+        .s-progress { background-color: #27ae60; }
+        .c-progress { background-color: #3498db; }
+        .percentage {
+            font-weight: bold;
+            font-size: 18px;
+            margin-top: 5px;
+        }
+        .description {
+            margin-top: 10px;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        .error {
+            color: #e74c3c;
+            text-align: center;
+            margin-top: 10px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>DISC人格测试</h1>
+    <p class="subtitle">请根据您的第一反应选择最符合您的选项，共35题</p>
+    
+    <form id="personalityTest">
+        <!-- 问题将通过JavaScript动态生成 -->
+    </form>
+    
+    <button type="button" class="submit-btn" onclick="calculateResults()">提交测试</button>
+    <div class="error" id="errorMessage">请完成所有问题后再提交</div>
+    
+    <div class="results" id="results">
+        <h2>您的测试结果</h2>
+        <div id="resultContent"></div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "1. 在团队项目中，你通常倾向于：",
+                options: [
+                    { text: "担任领导角色，推动项目进展", type: "D" },
+                    { text: "激励团队成员，保持积极氛围", type: "I" },
+                    { text: "确保团队和谐，支持他人", type: "S" },
+                    { text: "制定详细计划，确保质量", type: "C" }
+                ]
+            },
+            {
+                question: "2. 面对截止日期临近，你会：",
+                options: [
+                    { text: "快速做出决定，优先完成任务", type: "D" },
+                    { text: "召集团队讨论，鼓舞士气", type: "I" },
+                    { text: "稳步推进，确保不出错", type: "S" },
+                    { text: "仔细检查每个细节，确保完美", type: "C" }
+                ]
+            },
+            {
+                question: "3. 在社交场合中，你通常：",
+                options: [
+                    { text: "主动与他人交流，拓展人脉", type: "D" },
+                    { text: "成为焦点，享受社交乐趣", type: "I" },
+                    { text: "与熟悉的人深入交谈", type: "S" },
+                    { text: "观察环境，选择性参与", type: "C" }
+                ]
+            },
+            {
+                question: "4. 当遇到分歧时，你倾向于：",
+                options: [
+                    { text: "直接表达观点，坚持己见", type: "D" },
+                    { text: "用热情和魅力说服他人", type: "I" },
+                    { text: "寻求妥协，维护关系", type: "S" },
+                    { text: "用逻辑和事实支持自己的观点", type: "C" }
+                ]
+            },
+            {
+                question: "5. 你更喜欢的工作环境是：",
+                options: [
+                    { text: "快节奏、充满挑战", type: "D" },
+                    { text: "活跃、社交性强", type: "I" },
+                    { text: "稳定、支持性", type: "S" },
+                    { text: "有序、注重细节", type: "C" }
+                ]
+            },
+            {
+                question: "6. 对于规则和程序，你的态度是：",
+                options: [
+                    { text: "如果阻碍效率，可以灵活变通", type: "D" },
+                    { text: "规则应该服务于人，而非束缚", type: "I" },
+                    { text: "遵循规则以确保稳定", type: "S" },
+                    { text: "严格遵守规则，确保准确性", type: "C" }
+                ]
+            },
+            {
+                question: "7. 你如何对待新项目？",
+                options: [
+                    { text: "立即行动，抓住机会", type: "D" },
+                    { text: "热情启动，激发他人兴趣", type: "I" },
+                    { text: "谨慎评估，稳步推进", type: "S" },
+                    { text: "详细规划，确保万无一失", type: "C" }
+                ]
+            },
+            {
+                question: "8. 在压力下，你通常：",
+                options: [
+                    { text: "变得更加果断，快速决策", type: "D" },
+                    { text: "寻求他人支持，分享感受", type: "I" },
+                    { text: "保持冷静，按部就班", type: "S" },
+                    { text: "更加注重细节，反复检查", type: "C" }
+                ]
+            },
+            {
+                question: "9. 你更倾向于哪种学习方式？",
+                options: [
+                    { text: "通过实践和挑战学习", type: "D" },
+                    { text: "通过讨论和互动学习", type: "I" },
+                    { text: "通过观察和模仿学习", type: "S" },
+                    { text: "通过阅读和研究学习", type: "C" }
+                ]
+            },
+            {
+                question: "10. 你如何看待风险？",
+                options: [
+                    { text: "愿意承担风险以获取更大回报", type: "D" },
+                    { text: "乐观看待风险，相信运气", type: "I" },
+                    { text: "规避风险，偏好安全选择", type: "S" },
+                    { text: "仔细评估风险，谨慎决策", type: "C" }
+                ]
+            },
+            {
+                question: "11. 你如何安排业余时间？",
+                options: [
+                    { text: "参加竞争性活动或运动", type: "D" },
+                    { text: "参加社交聚会或活动", type: "I" },
+                    { text: "与家人或密友共度时光", type: "S" },
+                    { text: "从事个人爱好或学习新技能", type: "C" }
+                ]
+            },
+            {
+                question: "12. 在会议中，你通常：",
+                options: [
+                    { text: "主导讨论，推动决策", type: "D" },
+                    { text: "积极发言，分享想法", type: "I" },
+                    { text: "倾听他人，提供支持", type: "S" },
+                    { text: "记录要点，分析信息", type: "C" }
+                ]
+            },
+            {
+                question: "13. 你如何对待批评？",
+                options: [
+                    { text: "直接反驳或接受并改进", type: "D" },
+                    { text: "可能会感到受伤，但很快恢复", type: "I" },
+                    { text: "认真考虑，但可能内心纠结", type: "S" },
+                    { text: "分析批评的合理性，客观对待", type: "C" }
+                ]
+            },
+            {
+                question: "14. 你更看重工作的哪个方面？",
+                options: [
+                    { text: "成就和结果", type: "D" },
+                    { text: "认可和关系", type: "I" },
+                    { text: "稳定和和谐", type: "S" },
+                    { text: "准确和质量", type: "C" }
+                ]
+            },
+            {
+                question: "15. 你如何做决策？",
+                options: [
+                    { text: "快速决策，依靠直觉", type: "D" },
+                    { text: "咨询他人意见，考虑感受", type: "I" },
+                    { text: "谨慎决策，避免冲突", type: "S" },
+                    { text: "系统分析，基于数据", type: "C" }
+                ]
+            },
+            {
+                question: "16. 你如何对待变化？",
+                options: [
+                    { text: "拥抱变化，视为机会", type: "D" },
+                    { text: "乐观适应，保持积极", type: "I" },
+                    { text: "倾向于维持现状，逐步适应", type: "S" },
+                    { text: "分析变化影响，谨慎应对", type: "C" }
+                ]
+            },
+            {
+                question: "17. 你如何激励他人？",
+                options: [
+                    { text: "设定高目标，挑战他们", type: "D" },
+                    { text: "表扬和鼓励，营造积极氛围", type: "I" },
+                    { text: "提供支持和稳定环境", type: "S" },
+                    { text: "提供清晰指导和资源", type: "C" }
+                ]
+            },
+            {
+                question: "18. 你如何管理时间？",
+                options: [
+                    { text: "优先处理重要紧急任务", type: "D" },
+                    { text: "灵活安排，随情况调整", type: "I" },
+                    { text: "制定稳定计划，按部就班", type: "S" },
+                    { text: "详细规划，预留缓冲时间", type: "C" }
+                ]
+            },
+            {
+                question: "19. 你如何看待团队合作？",
+                options: [
+                    { text: "团队应以目标为导向，高效协作", type: "D" },
+                    { text: "团队应充满活力，互相激励", type: "I" },
+                    { text: "团队应和谐相处，互相支持", type: "S" },
+                    { text: "团队应分工明确，注重细节", type: "C" }
+                ]
+            },
+            {
+                question: "20. 你如何对待失败？",
+                options: [
+                    { text: "视为学习机会，迅速调整", type: "D" },
+                    { text: "可能会沮丧，但很快振作", type: "I" },
+                    { text: "感到失望，需要时间恢复", type: "S" },
+                    { text: "分析原因，避免再犯", type: "C" }
+                ]
+            },
+            {
+                question: "21. 你更喜欢哪种沟通方式？",
+                options: [
+                    { text: "直接、简洁、切中要害", type: "D" },
+                    { text: "热情、生动、富有感染力", type: "I" },
+                    { text: "温和、耐心、注重倾听", type: "S" },
+                    { text: "准确、详细、有条理", type: "C" }
+                ]
+            },
+            {
+                question: "22. 你如何对待承诺？",
+                options: [
+                    { text: "以结果为导向，可能灵活调整", type: "D" },
+                    { text: "乐于承诺，但可能因热情消退而改变", type: "I" },
+                    { text: "认真对待承诺，尽力履行", type: "S" },
+                    { text: "谨慎承诺，确保能高质量完成", type: "C" }
+                ]
+            },
+            {
+                question: "23. 你如何应对冲突？",
+                options: [
+                    { text: "直面冲突，解决问题", type: "D" },
+                    { text: "试图缓和气氛，化解矛盾", type: "I" },
+                    { text: "回避冲突，寻求和谐", type: "S" },
+                    { text: "分析冲突根源，寻求逻辑解决方案", type: "C" }
+                ]
+            },
+            {
+                question: "24. 你如何设定目标？",
+                options: [
+                    { text: "设定挑战性目标，追求卓越", type: "D" },
+                    { text: "设定激发热情的目标，享受过程", type: "I" },
+                    { text: "设定现实可行的目标，稳步前进", type: "S" },
+                    { text: "设定清晰具体的目标，注重可衡量性", type: "C" }
+                ]
+            },
+            {
+                question: "25. 你如何对待细节？",
+                options: [
+                    { text: "关注大局，细节可委托他人", type: "D" },
+                    { text: "可能忽略细节，更注重大局和人际", type: "I" },
+                    { text: "关注细节，确保不出现疏漏", type: "S" },
+                    { text: "高度重视细节，追求完美", type: "C" }
+                ]
+            },
+            {
+                question: "26. 你如何对待权威？",
+                options: [
+                    { text: "尊重权威，但若阻碍效率会挑战", type: "D" },
+                    { text: "与权威保持良好关系，但更看重个人魅力", type: "I" },
+                    { text: "遵从权威，维护稳定", type: "S" },
+                    { text: "尊重权威，但更看重规则和程序", type: "C" }
+                ]
+            },
+            {
+                question: "27. 你如何对待创新？",
+                options: [
+                    { text: "积极推动创新，以获取竞争优势", type: "D" },
+                    { text: "喜欢创新，尤其是能激发热情的点子", type: "I" },
+                    { text: "对创新持谨慎态度，偏好成熟方案", type: "S" },
+                    { text: "评估创新的可行性和风险，谨慎采纳", type: "C" }
+                ]
+            },
+            {
+                question: "28. 你如何对待工作与生活的平衡？",
+                options: [
+                    { text: "工作为重，愿意牺牲个人时间", type: "D" },
+                    { text: "追求工作与生活的乐趣平衡", type: "I" },
+                    { text: "重视生活稳定，工作服务于生活", type: "S" },
+                    { text: "合理规划时间，确保工作生活有序", type: "C" }
+                ]
+            },
+            {
+                question: "29. 你如何对待反馈？",
+                options: [
+                    { text: "直接询问结果，关注改进点", type: "D" },
+                    { text: "乐于接受积极反馈，可能对负面反馈敏感", type: "I" },
+                    { text: "重视反馈，但可能过度在意他人看法", type: "S" },
+                    { text: "客观分析反馈，基于事实改进", type: "C" }
+                ]
+            },
+            {
+                question: "30. 你如何对待责任？",
+                options: [
+                    { text: "勇于承担责任，以结果为导向", type: "D" },
+                    { text: "乐于承担责任，尤其是能展现自己的任务", type: "I" },
+                    { text: "认真履行责任，确保不辜负期望", type: "S" },
+                    { text: "明确责任范围，确保高质量完成", type: "C" }
+                ]
+            },
+            {
+                question: "31. 你如何对待金钱？",
+                options: [
+                    { text: "视金钱为达成目标的工具，愿意投资风险", type: "D" },
+                    { text: "金钱用于享受生活和社交", type: "I" },
+                    { text: "谨慎理财，确保经济稳定", type: "S" },
+                    { text: "精打细算，注重财务规划", type: "C" }
+                ]
+            },
+            {
+                question: "32. 你如何对待健康？",
+                options: [
+                    { text: "忙碌时可能忽略健康，注重效率", type: "D" },
+                    { text: "关注健康，但更享受生活乐趣", type: "I" },
+                    { text: "保持健康习惯，注重稳定", type: "S" },
+                    { text: "制定健康计划，严格执行", type: "C" }
+                ]
+            },
+            {
+                question: "33. 你如何对待学习？",
+                options: [
+                    { text: "学习能提升竞争力的知识技能", type: "D" },
+                    { text: "学习能拓展社交和视野的内容", type: "I" },
+                    { text: "学习实用技能，确保稳定发展", type: "S" },
+                    { text: "系统学习，注重深度和准确性", type: "C" }
+                ]
+            },
+            {
+                question: "34. 你如何对待旅行？",
+                options: [
+                    { text: "喜欢冒险和探索新目的地", type: "D" },
+                    { text: "喜欢社交和体验当地文化", type: "I" },
+                    { text: "喜欢放松和熟悉的环境", type: "S" },
+                    { text: "喜欢提前规划，确保行程顺利", type: "C" }
+                ]
+            },
+            {
+                question: "35. 你如何对待未来？",
+                options: [
+                    { text: "积极规划，追求更大成就", type: "D" },
+                    { text: "乐观期待，相信好事会发生", type: "I" },
+                    { text: "期待稳定，避免重大变化", type: "S" },
+                    { text: "详细规划，确保未来可控", type: "C" }
+                ]
+            }
+        ];
+
+        // 生成测试问题
+        function generateQuestions() {
+            const form = document.getElementById('personalityTest');
+            let html = '';
+            
+            questions.forEach((q, index) => {
+                html += `
+                <div class="question">
+                    <h3>${q.question}</h3>
+                    <div class="options">
+                        ${q.options.map((opt, optIndex) => `
+                        <div class="option">
+                            <input type="radio" id="q${index}_${optIndex}" name="q${index}" value="${opt.type}">
+                            <label for="q${index}_${optIndex}">${String.fromCharCode(65 + optIndex)}. ${opt.text}</label>
+                        </div>
+                        `).join('')}
+                    </div>
+                </div>
+                `;
+            });
+            
+            form.innerHTML = html;
+        }
+
+        // 计算结果
+        function calculateResults() {
+            // 检查是否所有问题都已回答
+            let allAnswered = true;
+            for (let i = 0; i < questions.length; i++) {
+                const selected = document.querySelector(`input[name="q${i}"]:checked`);
+                if (!selected) {
+                    allAnswered = false;
+                    break;
+                }
+            }
+            
+            if (!allAnswered) {
+                document.getElementById('errorMessage').style.display = 'block';
+                return;
+            }
+            
+            document.getElementById('errorMessage').style.display = 'none';
+            
+            // 统计各类型得分
+            const scores = { D: 0, I: 0, S: 0, C: 0 };
+            
+            for (let i = 0; i < questions.length; i++) {
+                const selected = document.querySelector(`input[name="q${i}"]:checked`);
+                if (selected) {
+                    scores[selected.value]++;
+                }
+            }
+            
+            // 计算百分比
+            const total = questions.length;
+            const percentages = {
+                D: Math.round((scores.D / total) * 100),
+                I: Math.round((scores.I / total) * 100),
+                S: Math.round((scores.S / total) * 100),
+                C: Math.round((scores.C / total) * 100)
+            };
+            
+            // 显示结果
+            displayResults(scores, percentages);
+        }
+
+        // 显示结果
+        function displayResults(scores, percentages) {
+            const resultsDiv = document.getElementById('results');
+            const resultContent = document.getElementById('resultContent');
+            
+            const types = [
+                { 
+                    key: 'D', 
+                    name: '支配型 (Dominance)', 
+                    color: '#e74c3c',
+                    description: '您倾向于直接、果断，以结果为导向。喜欢挑战，善于决策和领导。'
+                },
+                { 
+                    key: 'I', 
+                    name: '影响型 (Influence)', 
+                    color: '#f39c12',
+                    description: '您倾向于热情、乐观，善于社交。喜欢与人互动，激励他人。'
+                },
+                { 
+                    key: 'S', 
+                    name: '稳健型 (Steadiness)', 
+                    color: '#27ae60',
+                    description: '您倾向于耐心、可靠，支持他人。喜欢稳定和谐的环境。'
+                },
+                { 
+                    key: 'C', 
+                    name: '谨慎型 (Conscientiousness)', 
+                    color: '#3498db',
+                    description: '您倾向于精确、系统化，注重细节。喜欢有序和高质量的工作。'
+                }
+            ];
+            
+            let html = '';
+            
+            types.forEach(type => {
+                html += `
+                <div class="result-item">
+                    <h3>${type.name}</h3>
+                    <div class="progress-bar">
+                        <div class="progress ${type.key.toLowerCase()}-progress" style="width: ${percentages[type.key]}%"></div>
+                    </div>
+                    <div class="percentage" style="color: ${type.color}">${percentages[type.key]}%</div>
+                    <div class="description">${type.description}</div>
+                </div>
+                `;
+            });
+            
+            resultContent.innerHTML = html;
+            resultsDiv.style.display = 'block';
+            
+            // 滚动到结果区域
+            resultsDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // 初始化
+        window.onload = generateQuestions;
+    </script>
+</body>
+</html>
